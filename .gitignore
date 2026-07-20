@@ -1,0 +1,26 @@
+# ============================================
+# BinGoo v2 - Git Ignore
+# ============================================
+
+# Output files (generated during scans)
+results/
+*.txt
+
+# Temporary split files (created by injector_tester_core)
+lnkfile-tmp_*
+
+# Temp files (mktemp generated)
+bingoo_*.tmp*
+
+# Crash dumps
+crash_dumped.results
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Editor backups
+*~
+*.swp
+*.swo
+*.bak
