@@ -2,8 +2,7 @@
 # BinGoo! v2 - Updated for 2026
 # A full all-in-one Google AND Bing Dorker Search and Analyzer Script
 # Original Author: Hood3dRob1n
-# Updated By: ArmitCode - 2026
-# 
+# Updated: ArmitCode - 2026
 #
 # Requires CURL, NMAP, FIMAP, and SQLMAP to fully work with all modules and plugins
 # See README.txt file for full instructions and description of available options
@@ -19,7 +18,14 @@ SPATH=/home/ArmitCode/fun/sqlmap
 #Path to FIMAP
 FPATH=/home/ArmitCode/fun/fimap/src
 # Junk and Temp Files Location for tmp storage while script does its thing
-JUNK=/tmp
+# Find a writable temp directory
+if [ -d /tmp ] && [ -w /tmp ]; then
+    JUNK=/tmp
+elif [ -d /var/tmp ] && [ -w /var/tmp ]; then
+    JUNK=/var/tmp
+else
+    JUNK=.
+fi
 # Pre-set for pagefinder plugin to use admin.lst file for finding admin files but can change to search for anything (plugins/pinfo.lst for example) based on server response and given word list with one per line, change as you like just make sure it exists before you run if you do :p
 FINDERLIST=plugins/admin.lst
 #<= CHANGE ABOVE THIS AS NEEDED =>
@@ -29,13 +35,38 @@ FINDERLIST=plugins/admin.lst
 #VARIABLES
 #G=Google & B=Bing
 METH=G
-STORAGE1=$(mktemp -p "$JUNK" bingoo_storage1.XXXXXX)
-STORAGE2=$(mktemp -p "$JUNK" bingoo_storage2.XXXXXX)
-STORAGE3=$(mktemp -p "$JUNK" bingoo_storage3.XXXXXX)
-STORAGE4=$(mktemp -p "$JUNK" bingoo_storage4.XXXXXX)
-STORAGE5=$(mktemp -p "$JUNK" bingoo_storage5.XXXXXX)
-CHK1=$(mktemp -p "$JUNK" bingoo_chk1.XXXXXX)
-CHK2=$(mktemp -p "$JUNK" bingoo_chk2.XXXXXX)
+
+# Safe temp file creation function
+safe_mktemp() {
+    local prefix="$1"
+    local tmpfile
+    # Try mktemp first
+    tmpfile=$(mktemp "${JUNK}/${prefix}.XXXXXX" 2>/dev/null)
+    if [ -z "$tmpfile" ] || [ ! -f "$tmpfile" ]; then
+        # Fallback: create manually
+        tmpfile="${JUNK}/${prefix}.$$.$RANDOM"
+        touch "$tmpfile" 2>/dev/null || tmpfile="./${prefix}.$$.$RANDOM"
+        touch "$tmpfile" 2>/dev/null
+    fi
+    echo "$tmpfile"
+}
+
+# Create temp files with fallback
+STORAGE1=$(safe_mktemp bingoo_storage1)
+STORAGE2=$(safe_mktemp bingoo_storage2)
+STORAGE3=$(safe_mktemp bingoo_storage3)
+STORAGE4=$(safe_mktemp bingoo_storage4)
+STORAGE5=$(safe_mktemp bingoo_storage5)
+CHK1=$(safe_mktemp bingoo_chk1)
+CHK2=$(safe_mktemp bingoo_chk2)
+
+# Verify temp files were created
+for tmpfile in "$STORAGE1" "$STORAGE2" "$STORAGE3" "$STORAGE4" "$STORAGE5" "$CHK1" "$CHK2"; do
+    if [ -z "$tmpfile" ] || [ ! -f "$tmpfile" ]; then
+        echo "ERROR: Failed to create temp file" >&2
+        exit 1
+    fi
+done
 # Updated User Agents for 2026
 uagent1="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
 uagent2="Mozilla/5.0 (Macintosh; Intel Mac OS X 14_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
@@ -141,7 +172,7 @@ cat << "EOT"
  || |_| |_____|  _| | | | | | (_| |  __/ |   |
  | \____|     |_|   |_|_| |_|\__,_|\___|_|   |
  |                                           |
- | v2 (2026)               V2-By-ArmitCode   |
+ | v2 (2026)                 V2-By: ArmitCode |
  +-------------------------------------------+
 EOT
 echo
@@ -154,7 +185,7 @@ cat << "EOT"
          (o o)
  +----oOO-{_}-OOo-----+
  |  Bing! Dorker v2   |
- |  V2-By-ArmitCode   |
+ |  V2-By: ArmitCode   |
  +--------------------+
 EOT
 echo
@@ -190,10 +221,13 @@ g_finder(){
 			--connect-timeout 10 \
 			--max-time 30 \
 			"https://www.google.com/search?q=$1&start=$COUNT" 2>/dev/null | \
-			grep -oP 'href="[^"]*url\?q=\K[^"&]+' | \
+			grep -o 'href="[^"]*url?q=[^"]*"' | \
+			sed 's/href="//;s/"$//' | \
+			sed 's/.*url?q=//' | \
+			sed 's/&amp;/\&/g' | \
+			sed 's/&sa=.*//' | \
 			grep -v '^http://www.google.com' | \
-			grep -v '^/search' | \
-			sed 's/\&amp;/\&/g' >> "$STORAGE1"
+			grep -v '^/search' >> "$STORAGE1"
 
 		COUNT=$(( $COUNT + 10 ))
 		page=$(( $page + 1 ))
@@ -229,7 +263,7 @@ while [ "$COUNT" -le 225 ]; do
 		--connect-timeout 10 \
 		--max-time 30 \
 		"https://www.bing.com/search?q=$DORK&first=$COUNT" 2>/dev/null | \
-		grep -oP 'href="\Khttps?://[^"]+' | \
+		grep -o 'href="https\?://[^"]*"' | sed 's/href="//;s/"$//' | \
 		grep -v 'bing.com' | \
 		grep -v 'microsoft.com' >> "$STORAGE1"
 
@@ -313,7 +347,7 @@ core(){
 									--connect-timeout 10 \
 									--max-time 30 \
 									"https://www.bing.com/search?q=$dork&first=$COUNT" 2>/dev/null | \
-									grep -oP 'href="\Khttps?://[^"]+' | \
+									grep -o 'href="https\?://[^"]*"' | sed 's/href="//;s/"$//' | \
 									grep -v 'bing.com' | \
 									grep -v 'microsoft.com' >> "$STORAGE1"
 								COUNT=$((COUNT + 10))
@@ -340,10 +374,14 @@ core(){
 									--connect-timeout 10 \
 									--max-time 30 \
 									"https://www.google.com/search?q=$dork&start=$COUNT" 2>/dev/null | \
-									grep -oP 'href="[^"]*url\?q=\K[^"&]+' | \
+									grep -o 'href="[^"]*url?q=[^"]*"' | \
+									sed 's/href="//;s/"$//' | \
+									sed 's/.*url?q=//' | \
+												sed 's/&amp;/\&/g' | \
+												sed 's/&sa=.*//' | \
 									grep -v '^http://www.google.com' | \
 									grep -v '^/search' | \
-									sed 's/\&amp;/\&/g' >> "$STORAGE1"
+									sed 's/&amp;/\&/g' >> "$STORAGE1"
 								COUNT=$(( $COUNT + 10 ))
 								sleep $(awk -v min=1 -v max=3 'BEGIN{srand(); print min+rand()*(max-min)}')
 							done
@@ -653,7 +691,7 @@ injector_tester_core(){
 		rm -rf lnkfile-tmp_* 2> /dev/null
 		rm -f results/bingoo_tmp.results 2> /dev/null
 		if [ "$SHARE" != 1 ]; then
-			banner | grep --color -E 'By||v2-ArmitCode'
+			banner | grep --color -E 'By||ArmitCode'
 			analyze_type
 		fi
 	fi
@@ -689,7 +727,7 @@ injector_tester_core(){
 		rm -rf lnkfile-tmp_* 2> /dev/null
 		rm -f results/bingoo_tmp.results 2> /dev/null
 		if [ "$SHARE" != 1 ]; then
-			banner | grep --color -E 'By||v2-ArmitCode'
+			banner | grep --color -E 'By||ArmitCode'
 			analyze_type
 		fi
 	fi
@@ -745,7 +783,7 @@ analyze_type(){
 				bingoo_sqli_tools
 			;;
 			"Return to Dorker")
-				banner | grep --color -E 'By||v2-ArmitCode'
+				banner | grep --color -E 'By||ArmitCode'
 				start_engine
 			;;
 			"Exit")
@@ -829,7 +867,7 @@ bing_shared_hosting_check(){
 				--connect-timeout 10 \
 				--max-time 30 \
 				"https://www.bing.com/search?q=ip%3a$SHAREDTARGETIP+$dork&first=$COUNT" 2>/dev/null | \
-				grep -oP 'href="\Khttps?://[^"]+' | \
+				grep -o 'href="https\?://[^"]*"' | sed 's/href="//;s/"$//' | \
 				grep -v 'bing.com' | \
 				grep -v 'microsoft.com' >> "$STORAGE4"
 			COUNT=$((COUNT + 10))
@@ -854,7 +892,7 @@ bing_shared_hosting_check(){
 	echo "Found $sharedcnt possibles, please check results/shared-hosting.results file for full details if you missed in terminal..." | grep --color -E 'Found||possibles||please check results||shared||hosting||results file for full details if you missed in terminal'
 	echo
 	rm -f shared.txt
-	banner | grep --color -E 'By||v2-ArmitCode'
+	banner | grep --color -E 'By||ArmitCode'
 	start_engine
 }
 
@@ -900,7 +938,7 @@ BIZ COM INFO NET ORG AERO ASIA CAT COOP EDU GOV INT JOBS MIL MOBI MUSEUM TEL TRA
 				--connect-timeout 10 \
 				--max-time 30 \
 				"https://www.bing.com/search?q=$dork&first=$COUNT" 2>/dev/null | \
-				grep -oP 'href="\Khttps?://[^"]+' | \
+				grep -o 'href="https\?://[^"]*"' | sed 's/href="//;s/"$//' | \
 				grep -v 'bing.com' | \
 				grep -v 'microsoft.com' >> "$STORAGE4"
 			COUNT=$((COUNT + 10))
@@ -925,7 +963,7 @@ BIZ COM INFO NET ORG AERO ASIA CAT COOP EDU GOV INT JOBS MIL MOBI MUSEUM TEL TRA
 	echo "Found $sharedcnt possibles, please check results/$BINGGEOCODE.results file for full details if you missed in terminal..." | grep --color -E 'Found||possibles||please check results||\$BINGGEOCODE||results file for full details if you missed in terminal'
 	echo
 	rm -f GEO.txt
-	banner | grep --color -E 'By||v2-ArmitCode'
+	banner | grep --color -E 'By||ArmitCode'
 	start_engine
 }
 
@@ -935,27 +973,27 @@ digger_recon(){
 	#IF it fails consider using EXPORT for exporting values from resolver....
 	source plugins/digger
 	wait
-	banner | grep --color -E 'By||v2-ArmitCode'
+	banner | grep --color -E 'By||ArmitCode'
 	start_engine
 }
 
 bingoo_sqli_tools(){
 	source plugins/SQLi
 	wait
-	banner | grep --color -E 'By||v2-ArmitCode'
+	banner | grep --color -E 'By||ArmitCode'
 	start_engine
 }
 
 bingoo_lfi_tools(){
 	source plugins/LFI
 	wait
-	banner | grep --color -E 'By||v2-ArmitCode'
+	banner | grep --color -E 'By||ArmitCode'
 	start_engine
 }
 
 # MAIN FUNCTION CALLS
 clear
-banner | grep --color -E 'By||v2-ArmitCode'
+banner | grep --color -E 'By||ArmitCode'
 
 # Check that user has CURL installed already as its core of script (lynx no longer required)
 command -v curl >/dev/null 2>&1 || { echo >&2 "CURL isn't installed!  Can't use this tool without it..." | grep --color -E 'CURL isn||t installed||Can||t use this tool without it'; exit 0; }
