@@ -2,8 +2,8 @@
 # BinGoo! v2 - Updated for 2026
 # A full all-in-one Google AND Bing Dorker Search and Analyzer Script
 # Original Author: Hood3dRob1n
-# Updated: 2026
-# Blog: http://kaoticcreations.blogspot.com
+# Updated By: ArmitCode - 2026
+# 
 #
 # Requires CURL, NMAP, FIMAP, and SQLMAP to fully work with all modules and plugins
 # See README.txt file for full instructions and description of available options
@@ -15,9 +15,9 @@
 # CONFIGURATION SECTION
 #<= CHANGE BELOW THIS AS NEEDED =>
 #Path to SQLMAP 
-SPATH=/home/hood3drob1n/fun/sqlmap
+SPATH=/home/ArmitCode/fun/sqlmap
 #Path to FIMAP
-FPATH=/home/hood3drob1n/fun/fimap/src
+FPATH=/home/ArmitCode/fun/fimap/src
 # Junk and Temp Files Location for tmp storage while script does its thing
 JUNK=/tmp
 # Pre-set for pagefinder plugin to use admin.lst file for finding admin files but can change to search for anything (plugins/pinfo.lst for example) based on server response and given word list with one per line, change as you like just make sure it exists before you run if you do :p
@@ -126,7 +126,7 @@ cat<<"EOT"
  ) | |_) | | | | | |_| | (_) | (_) |_| (
 (  |____/|_|_| |_|\____|\___/ \___/(_)  )
  )                                     (
-'---------------------By-Hood3dRob1n----'
+'---------------------V2-By-ArmitCode----'
 EOT
 }
 
@@ -141,7 +141,7 @@ cat << "EOT"
  || |_| |_____|  _| | | | | | (_| |  __/ |   |
  | \____|     |_|   |_|_| |_|\__,_|\___|_|   |
  |                                           |
- | v2 (2026)                 By: Hood3dRob1n |
+ | v2 (2026)               V2-By-ArmitCode   |
  +-------------------------------------------+
 EOT
 echo
@@ -154,7 +154,7 @@ cat << "EOT"
          (o o)
  +----oOO-{_}-OOo-----+
  |  Bing! Dorker v2   |
- |  By: Hood3dRob1n   |
+ |  V2-By-ArmitCode   |
  +--------------------+
 EOT
 echo
@@ -653,7 +653,7 @@ injector_tester_core(){
 		rm -rf lnkfile-tmp_* 2> /dev/null
 		rm -f results/bingoo_tmp.results 2> /dev/null
 		if [ "$SHARE" != 1 ]; then
-			banner | grep --color -E 'By||Hood3dRob1n'
+			banner | grep --color -E 'By||v2-ArmitCode'
 			analyze_type
 		fi
 	fi
@@ -689,7 +689,7 @@ injector_tester_core(){
 		rm -rf lnkfile-tmp_* 2> /dev/null
 		rm -f results/bingoo_tmp.results 2> /dev/null
 		if [ "$SHARE" != 1 ]; then
-			banner | grep --color -E 'By||Hood3dRob1n'
+			banner | grep --color -E 'By||v2-ArmitCode'
 			analyze_type
 		fi
 	fi
@@ -745,7 +745,7 @@ analyze_type(){
 				bingoo_sqli_tools
 			;;
 			"Return to Dorker")
-				banner | grep --color -E 'By||Hood3dRob1n'
+				banner | grep --color -E 'By||v2-ArmitCode'
 				start_engine
 			;;
 			"Exit")
@@ -854,7 +854,7 @@ bing_shared_hosting_check(){
 	echo "Found $sharedcnt possibles, please check results/shared-hosting.results file for full details if you missed in terminal..." | grep --color -E 'Found||possibles||please check results||shared||hosting||results file for full details if you missed in terminal'
 	echo
 	rm -f shared.txt
-	banner | grep --color -E 'By||Hood3dRob1n'
+	banner | grep --color -E 'By||v2-ArmitCode'
 	start_engine
 }
 
@@ -925,7 +925,7 @@ BIZ COM INFO NET ORG AERO ASIA CAT COOP EDU GOV INT JOBS MIL MOBI MUSEUM TEL TRA
 	echo "Found $sharedcnt possibles, please check results/$BINGGEOCODE.results file for full details if you missed in terminal..." | grep --color -E 'Found||possibles||please check results||\$BINGGEOCODE||results file for full details if you missed in terminal'
 	echo
 	rm -f GEO.txt
-	banner | grep --color -E 'By||Hood3dRob1n'
+	banner | grep --color -E 'By||v2-ArmitCode'
 	start_engine
 }
 
@@ -935,27 +935,27 @@ digger_recon(){
 	#IF it fails consider using EXPORT for exporting values from resolver....
 	source plugins/digger
 	wait
-	banner | grep --color -E 'By||Hood3dRob1n'
+	banner | grep --color -E 'By||v2-ArmitCode'
 	start_engine
 }
 
 bingoo_sqli_tools(){
 	source plugins/SQLi
 	wait
-	banner | grep --color -E 'By||Hood3dRob1n'
+	banner | grep --color -E 'By||v2-ArmitCode'
 	start_engine
 }
 
 bingoo_lfi_tools(){
 	source plugins/LFI
 	wait
-	banner | grep --color -E 'By||Hood3dRob1n'
+	banner | grep --color -E 'By||v2-ArmitCode'
 	start_engine
 }
 
 # MAIN FUNCTION CALLS
 clear
-banner | grep --color -E 'By||Hood3dRob1n'
+banner | grep --color -E 'By||v2-ArmitCode'
 
 # Check that user has CURL installed already as its core of script (lynx no longer required)
 command -v curl >/dev/null 2>&1 || { echo >&2 "CURL isn't installed!  Can't use this tool without it..." | grep --color -E 'CURL isn||t installed||Can||t use this tool without it'; exit 0; }
